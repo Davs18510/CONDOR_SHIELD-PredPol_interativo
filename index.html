@@ -3,19 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Condor Shield - Policiamento Preditivo</title>
+    <title>CONDOR SHIELD — Policiamento Preditivo</title>
+    <meta name="description" content="CONDOR SHIELD: Sistema de Inteligência Policial e Policiamento Preditivo Espaço-Temporal com XGBoost Poisson para a cidade de São Paulo.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-color: #0f172a;
-            --text-color: #f8fafc;
-            --primary-color: #3b82f6;
-            --secondary-color: #1e293b;
-            --accent-color: #60a5fa;
-            --card-bg: rgba(30, 41, 59, 0.7);
-            --card-border: rgba(255, 255, 255, 0.1);
+            --preto-suave: #1A1A1A;
+            --azul-fechado: #0F2027;
+            --cinza-prata: #BDC3C7;
+            --branco-puro: #FFFFFF;
+            --card-bg: rgba(26, 26, 26, 0.82);
+            --card-border: rgba(189, 195, 199, 0.16);
+            --card-border-hover: rgba(189, 195, 199, 0.45);
+            --accent-glow: rgba(189, 195, 199, 0.15);
         }
 
         * {
@@ -26,154 +28,332 @@
 
         body {
             font-family: 'Outfit', sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
+            background-color: var(--azul-fechado);
+            color: var(--cinza-prata);
             line-height: 1.6;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             background-image: 
-                radial-gradient(circle at 15% 50%, rgba(59, 130, 246, 0.15), transparent 25%),
-                radial-gradient(circle at 85% 30%, rgba(96, 165, 250, 0.15), transparent 25%);
+                radial-gradient(circle at 18% 25%, rgba(189, 195, 199, 0.08), transparent 35%),
+                radial-gradient(circle at 82% 75%, rgba(15, 32, 39, 0.9), transparent 45%),
+                linear-gradient(145deg, #0F2027 0%, #151d24 50%, #1A1A1A 100%);
             background-attachment: fixed;
+            overflow-x: hidden;
         }
 
         .container {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 4rem 2rem;
+            padding: 3.5rem 2rem;
             flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
 
         header {
             text-align: center;
-            margin-bottom: 4rem;
-            animation: fadeInDown 1s ease-out;
+            margin-bottom: 3.5rem;
+            animation: fadeInDown 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .brand-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(26, 26, 26, 0.9);
+            border: 1px solid var(--card-border);
+            padding: 6px 16px;
+            border-radius: 999px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: var(--cinza-prata);
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .brand-badge .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--branco-puro);
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+            animation: pulseDot 2s infinite;
+        }
+
+        @keyframes pulseDot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.85); }
         }
 
         h1 {
-            font-size: 3.5rem;
-            font-weight: 800;
+            font-size: 3.8rem;
+            font-weight: 900;
             margin-bottom: 1rem;
-            background: linear-gradient(135deg, #60a5fa, #3b82f6, #93c5fd);
+            background: linear-gradient(135deg, var(--branco-puro) 20%, var(--cinza-prata) 70%, #85929E 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            letter-spacing: -1px;
+            letter-spacing: -0.03em;
+            line-height: 1.1;
         }
 
         .subtitle {
-            font-size: 1.25rem;
-            color: #94a3b8;
-            max-width: 600px;
+            font-size: 1.15rem;
+            color: var(--cinza-prata);
+            max-width: 720px;
             margin: 0 auto;
             font-weight: 300;
+            line-height: 1.7;
         }
 
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-            animation: fadeInUp 1s ease-out 0.2s both;
+        /* Hero Main Action Card */
+        .hero-section {
+            margin-bottom: 3rem;
+            animation: fadeInUp 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.15s both;
         }
 
-        .card {
+        .main-dashboard-card {
             background: var(--card-bg);
             border: 1px solid var(--card-border);
-            border-radius: 16px;
-            padding: 2rem;
+            border-radius: 24px;
+            padding: 3rem 2.5rem;
             text-decoration: none;
-            color: var(--text-color);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            backdrop-filter: blur(10px);
+            color: var(--cinza-prata);
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            backdrop-filter: blur(16px);
             display: flex;
             flex-direction: column;
             position: relative;
             overflow: hidden;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
         }
 
-        .card::before {
+        .main-dashboard-card::before {
             content: '';
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
-            height: 4px;
-            background: linear-gradient(90deg, #3b82f6, #60a5fa);
-            transform: scaleX(0);
-            transform-origin: left;
-            transition: transform 0.3s ease;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, var(--branco-puro), var(--cinza-prata), transparent);
+            transform: scaleX(0.4);
+            transition: transform 0.4s ease;
         }
 
-        .card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
-            border-color: rgba(96, 165, 250, 0.3);
+        .main-dashboard-card:hover {
+            transform: translateY(-6px);
+            border-color: var(--card-border-hover);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6), 0 0 30px var(--accent-glow);
         }
 
-        .card:hover::before {
+        .main-dashboard-card:hover::before {
             transform: scaleX(1);
         }
 
-        .card-icon {
-            font-size: 2.5rem;
-            margin-bottom: 1.5rem;
-            display: inline-block;
-        }
-
-        .card-title {
-            font-size: 1.5rem;
-            font-weight: 600;
-            margin-bottom: 0.75rem;
-            color: #e2e8f0;
-        }
-
-        .card-desc {
-            color: #94a3b8;
-            font-size: 1rem;
-            flex-grow: 1;
-            margin-bottom: 1.5rem;
-        }
-
-        .card-action {
+        .dashboard-header {
             display: flex;
             align-items: center;
-            color: var(--accent-color);
-            font-weight: 600;
-            font-size: 0.9rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-top: auto;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
         }
 
-        .card-action span {
+        .dash-title-group {
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+        }
+
+        .dash-icon {
+            width: 58px;
+            height: 58px;
+            background: linear-gradient(135deg, #242424, #151d24);
+            border: 1px solid rgba(189, 195, 199, 0.25);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            color: var(--branco-puro);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+        }
+
+        .dash-title {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--branco-puro);
+            letter-spacing: -0.02em;
+        }
+
+        .dash-tag {
+            font-size: 0.75rem;
+            font-weight: 800;
+            background: rgba(189, 195, 199, 0.12);
+            color: var(--branco-puro);
+            border: 1px solid rgba(189, 195, 199, 0.25);
+            padding: 4px 12px;
+            border-radius: 6px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .dash-desc {
+            font-size: 1.05rem;
+            color: var(--cinza-prata);
+            line-height: 1.7;
+            margin-bottom: 2rem;
+            max-width: 900px;
+        }
+
+        /* Stats in main card */
+        .dash-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1.25rem;
+            margin-bottom: 2.25rem;
+        }
+
+        .stat-box {
+            background: rgba(15, 32, 39, 0.6);
+            border: 1px solid rgba(189, 195, 199, 0.1);
+            border-radius: 14px;
+            padding: 1.2rem 1.4rem;
+            transition: border-color 0.3s;
+        }
+
+        .stat-box:hover {
+            border-color: rgba(189, 195, 199, 0.3);
+        }
+
+        .stat-value {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: var(--branco-puro);
+            margin-bottom: 0.25rem;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: var(--cinza-prata);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 500;
+        }
+
+        /* CTA Button */
+        .cta-btn-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+        }
+
+        .cta-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            background: linear-gradient(135deg, var(--branco-puro) 0%, var(--cinza-prata) 100%);
+            color: var(--preto-suave);
+            font-size: 1rem;
+            font-weight: 800;
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35);
+        }
+
+        .main-dashboard-card:hover .cta-btn {
+            background: #FFFFFF;
+            transform: translateX(4px);
+            box-shadow: 0 12px 30px rgba(255, 255, 255, 0.2);
+        }
+
+        .cta-btn span {
+            font-size: 1.2rem;
             transition: transform 0.3s ease;
         }
 
-        .card:hover .card-action span {
-            transform: translateX(5px);
+        .main-dashboard-card:hover .cta-btn span {
+            transform: translateX(6px);
+        }
+
+        /* Features row */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            animation: fadeInUp 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.3s both;
+        }
+
+        .feature-card {
+            background: rgba(26, 26, 26, 0.65);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 1.75rem;
+            backdrop-filter: blur(12px);
+            transition: all 0.3s ease;
+        }
+
+        .feature-card:hover {
+            border-color: var(--card-border-hover);
+            transform: translateY(-4px);
+            background: rgba(26, 26, 26, 0.85);
+        }
+
+        .feature-icon {
+            font-size: 1.5rem;
+            margin-bottom: 0.85rem;
+            display: inline-block;
+        }
+
+        .feature-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--branco-puro);
+            margin-bottom: 0.5rem;
+        }
+
+        .feature-desc {
+            font-size: 0.9rem;
+            color: var(--cinza-prata);
+            line-height: 1.6;
         }
 
         footer {
             text-align: center;
-            padding: 2rem;
-            color: #64748b;
-            font-size: 0.9rem;
-            border-top: 1px solid rgba(255,255,255,0.05);
+            padding: 2.5rem 1rem 1.5rem;
+            color: #85929E;
+            font-size: 0.85rem;
+            border-top: 1px solid rgba(189, 195, 199, 0.08);
+            margin-top: 3rem;
+        }
+
+        footer strong {
+            color: var(--cinza-prata);
         }
 
         @keyframes fadeInDown {
-            from { opacity: 0; transform: translateY(-30px); }
+            from { opacity: 0; transform: translateY(-25px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
         @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(30px); }
+            from { opacity: 0; transform: translateY(25px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
         @media (max-width: 768px) {
-            h1 { font-size: 2.5rem; }
-            .container { padding: 2rem 1.5rem; }
+            h1 { font-size: 2.6rem; }
+            .container { padding: 2rem 1.25rem; }
+            .main-dashboard-card { padding: 2rem 1.5rem; }
+            .dash-title { font-size: 1.5rem; }
+            .dash-stats-grid { grid-template-columns: 1fr 1fr; }
         }
     </style>
 </head>
@@ -181,38 +361,81 @@
 
     <div class="container">
         <header>
-            <h1>Condor Shield</h1>
-            <p class="subtitle">Modelo Híbrido de Policiamento Preditivo (KDE + XGBoost Espaço-Temporal) para estimativa de risco de crimes contra a vida na cidade de São Paulo, geração de pontos previstos e direcionamento automático de viaturas.</p>
+            <div class="brand-badge">
+                <div class="dot"></div>
+                <span>SISTEMA DE INTELIGÊNCIA POLICIAL</span>
+            </div>
+            <h1>CONDOR SHIELD</h1>
+            <p class="subtitle">Plataforma preditiva de inteligência criminal com modelagem espaço-temporal XGBoost Poisson para estimativa de risco, projeção de ocorrências e direcionamento operacional de viaturas na cidade de São Paulo.</p>
         </header>
 
-        <div class="grid">
-            <a href="policiamento_preditivo/outputs/dashboard_preditivo.html" class="card">
-                <div class="card-icon">📊</div>
-                <h2 class="card-title">Dashboard Preditivo XGBoost</h2>
-                <p class="card-desc">SPA interativo com mapa de calor focado, pontos de crimes previstos pelo XGBoost, slider de horizonte (1-6 meses) e direcionamento preditivo de viaturas.</p>
-                <div class="card-action">Acessar Dashboard Preditivo <span>→</span></div>
-            </a>
+        <main class="hero-section">
+            <a href="policiamento_preditivo/outputs/dashboard_preditivo.html" class="main-dashboard-card" id="btn-dashboard-principal">
+                <div class="dashboard-header">
+                    <div class="dash-title-group">
+                        <div class="dash-icon">🛡️</div>
+                        <div>
+                            <h2 class="dash-title">Dashboard Preditivo XGBoost</h2>
+                            <span style="font-size: 0.85rem; color: var(--cinza-prata);">Aplicação Operacional Interativa (SPA)</span>
+                        </div>
+                    </div>
+                    <span class="dash-tag">MODELO ATIVO</span>
+                </div>
 
-            <a href="policiamento_preditivo/outputs/mapa_risco_sp.html" class="card">
-                <div class="card-icon">🗺️</div>
-                <h2 class="card-title">Mapa de Risco Espacial (KDE)</h2>
-                <p class="card-desc">Visualização geoespacial com densidade Kernel (prior espacial do modelo híbrido), destacando as áreas de maior incidência criminal.</p>
-                <div class="card-action">Explorar Mapa <span>→</span></div>
-            </a>
+                <p class="dash-desc">
+                    Acesse o mapa interativo de alta precisão com renderização de áreas quentes de risco, pontos de crimes projetados pelo modelo supervisionado XGBoost, ajuste de horizonte dinâmico (1 a 6 meses à frente) e despacho preditivo otimizado de viaturas de patrulhamento.
+                </p>
 
-            <a href="policiamento_preditivo/outputs/mapa_validacao_sp.html" class="card">
-                <div class="card-icon">✅</div>
-                <h2 class="card-title">Mapa de Validação</h2>
-                <p class="card-desc">Comparação entre as previsões do modelo e as ocorrências reais registradas no período de validação e teste.</p>
-                <div class="card-action">Ver Validação <span>→</span></div>
+                <div class="dash-stats-grid">
+                    <div class="stat-box">
+                        <div class="stat-value">95</div>
+                        <div class="stat-label">Delegacias Monitoradas</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value">60×60</div>
+                        <div class="stat-label">Resolução da Grade</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value">1 - 6 M</div>
+                        <div class="stat-label">Horizonte de Previsão</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value">100% LIVE</div>
+                        <div class="stat-label">Reatividade Operacional</div>
+                    </div>
+                </div>
+
+                <div class="cta-btn-wrapper">
+                    <div class="cta-btn">
+                        <span>Acessar CONDOR SHIELD</span>
+                        <span>→</span>
+                    </div>
+                </div>
             </a>
-        </div>
+        </main>
+
+        <section class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">📈</div>
+                <h3 class="feature-title">Previsão Espaço-Temporal</h3>
+                <p class="feature-desc">Modelagem preditiva supervisionada XGBoost Poisson com defasagens autorregressivas, tendência e prior espacial geoestatístico.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🚔</div>
+                <h3 class="feature-title">Direcionamento de Patrulha</h3>
+                <p class="feature-desc">Alocação inteligente e automatizada de viaturas distribuídas estritamente nos polos com maior probabilidade de ocorrência.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🎯</div>
+                <h3 class="feature-title">Precisão & Eficiência</h3>
+                <p class="feature-desc">Identificação de focos críticos e suporte à tomada de decisão tática para comandos de policiamento e companhias de área.</p>
+            </div>
+        </section>
     </div>
 
     <footer>
-        <p>Projeto acadêmico — Condor Shield. Desenvolvido com dados reais da SSP-SP (SIPCV/SPVida) | Modelo Híbrido KDE + XGBoost Espaço-Temporal.</p>
+        <p><strong>CONDOR SHIELD</strong> — Sistema de Policiamento Preditivo | Desenvolvido com dados reais da SSP-SP (SIPCV/SPVida)</p>
     </footer>
-
 
 </body>
 </html>
