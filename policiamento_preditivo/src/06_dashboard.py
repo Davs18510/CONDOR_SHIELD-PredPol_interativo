@@ -172,110 +172,480 @@ HEAD = '''<!DOCTYPE html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>PredPol SP - Policiamento Preditivo XGBoost</title>
+<title>CONDOR SHIELD - Policiamento Preditivo XGBoost</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
 <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
 <script src="https://leaflet.github.io/Leaflet.heat/dist/leaflet-heat.js"></script>
 <style>
-:root{--bg:#080D1A;--bg2:#0D1628;--card:rgba(255,255,255,.04);--bdr:rgba(59,130,246,.2);
---blue:#3B82F6;--bl:#60A5FA;--txt:#E2E8F0;--muted:#64748B;
---red:#EF4444;--ora:#F97316;--yel:#EAB308;--grn:#10B981;
---sw:280px;--pw:360px;}
-*{box-sizing:border-box;margin:0;padding:0;}
-html,body{height:100%;font-family:'Inter',sans-serif;background:var(--bg);color:var(--txt);overflow:hidden;}
-#hdr{height:52px;background:linear-gradient(90deg,#060E22,#112046,#060E22);
-  border-bottom:1px solid var(--bdr);display:flex;align-items:center;
-  justify-content:space-between;padding:0 18px;position:relative;z-index:999;}
-.hdr-l{display:flex;align-items:center;gap:10px;}
-.hdr-l h1{font-size:14px;font-weight:800;letter-spacing:.02em;}
-.hdr-l h1 span{color:var(--bl);}
-.sim-badge{font-size:9px;font-weight:800;background:var(--blue);color:#fff;
-  padding:2px 7px;border-radius:3px;letter-spacing:.1em;animation:pulse 2s infinite;}
-@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.7;}}
-.hdr-r{font-size:10px;color:var(--muted);text-align:right;line-height:1.7;}
-.hdr-r b{color:var(--bl);}
-#main{display:grid;grid-template-columns:var(--sw) 1fr var(--pw);
-  height:calc(100vh - 52px - 34px);}
-#sidebar{background:var(--bg2);border-right:1px solid var(--bdr);
-  overflow-y:auto;padding:12px 10px;display:flex;flex-direction:column;gap:8px;}
-#mapbox{position:relative;}
-#map{width:100%;height:100%;}
-#patrol{background:var(--bg2);border-left:1px solid var(--bdr);
-  overflow-y:auto;padding:12px 10px;display:flex;flex-direction:column;gap:6px;}
-#ftr{height:34px;background:#04080F;border-top:1px solid var(--bdr);
-  display:flex;align-items:center;justify-content:space-between;
-  padding:0 14px;font-size:10px;color:var(--muted);}
-.panel{background:var(--card);border:1px solid var(--bdr);border-radius:8px;padding:11px 12px;}
-.ptitle{font-size:10px;font-weight:700;text-transform:uppercase;
-  letter-spacing:.1em;color:var(--bl);margin-bottom:9px;}
-.copt{display:flex;align-items:center;gap:8px;padding:5px 6px;
-  border-radius:6px;cursor:pointer;margin-bottom:3px;transition:background .15s;}
-.copt:hover{background:rgba(59,130,246,.1);}
-.copt input{accent-color:var(--blue);width:14px;height:14px;cursor:pointer;flex-shrink:0;}
-.copt label{font-size:12px;cursor:pointer;line-height:1.3;user-select:none;}
-.srow{margin-bottom:9px;}
-.slbl{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:5px;}
-.slbl b{color:var(--bl);font-weight:700;}
-input[type=range]{width:100%;accent-color:var(--blue);cursor:pointer;}
-select{width:100%;padding:6px 8px;background:rgba(255,255,255,.05);
-  border:1px solid var(--bdr);border-radius:6px;color:var(--txt);
-  font-size:12px;font-family:inherit;cursor:pointer;outline:none;}
-select:focus{border-color:var(--blue);}
-.pcard{background:var(--card);border:1px solid var(--bdr);border-radius:8px;
-  padding:10px 12px;cursor:pointer;transition:all .15s;margin-bottom:5px;}
-.pcard:hover{border-color:rgba(59,130,246,.4);background:rgba(59,130,246,.05);transform:translateX(2px);}
-.pcard.critico{border-left:3px solid var(--red);}
-.pcard.alto{border-left:3px solid var(--ora);}
-.pcard.medio{border-left:3px solid var(--yel);}
-.pcard.baixo{border-left:3px solid var(--blue);}
-.phdr{display:flex;align-items:center;gap:5px;margin-bottom:5px;flex-wrap:wrap;}
-.vnum{font-size:11px;font-weight:800;color:#fff;background:rgba(255,255,255,.1);
-  padding:2px 7px;border-radius:4px;min-width:36px;text-align:center;}
-.utype{font-size:10px;font-weight:600;color:var(--bl);background:rgba(59,130,246,.12);
-  padding:2px 6px;border-radius:4px;flex:1;}
-.rbadge{font-size:9px;font-weight:800;padding:2px 7px;border-radius:4px;letter-spacing:.06em;}
-.rbadge.CRITICO{background:rgba(239,68,68,.25);color:#FCA5A5;}
-.rbadge.ALTO{background:rgba(249,115,22,.25);color:#FDBA74;}
-.rbadge.MEDIO{background:rgba(234,179,8,.25);color:#FDE68A;}
-.rbadge.BAIXO{background:rgba(59,130,246,.25);color:#93C5FD;}
-.pbairro{font-size:12px;font-weight:600;color:#CBD5E1;margin-bottom:4px;}
-.pdet{font-size:10px;color:var(--muted);display:flex;flex-direction:column;gap:2px;line-height:1.5;}
-.mrow{display:flex;justify-content:space-between;align-items:center;
-  padding:4px 0;border-bottom:1px solid rgba(255,255,255,.05);}
-.mrow:last-child{border-bottom:none;}
-.mkey{font-size:11px;color:var(--muted);}
-.mval{font-size:11px;font-weight:700;color:var(--bl);}
-.pp-hdr{border-bottom:1px solid var(--bdr);padding-bottom:8px;}
-.pp-title{font-size:12px;font-weight:800;letter-spacing:.04em;}
-.pp-sub{font-size:10px;color:var(--muted);margin-top:2px;}
-.empty-state{text-align:center;padding:30px 10px;color:var(--muted);font-size:11px;line-height:1.6;}
-.empty-state b{color:var(--txt);display:block;margin-bottom:6px;font-size:13px;}
-#map-overlay{position:absolute;bottom:16px;left:16px;z-index:999;
-  background:rgba(8,13,26,.88);backdrop-filter:blur(8px);
-  border:1px solid var(--bdr);border-radius:8px;padding:9px 12px;
-  font-size:10px;line-height:1.6;}
-#map-overlay b{font-size:11px;color:var(--bl);display:block;margin-bottom:4px;}
-.leg-row{display:flex;align-items:center;gap:6px;color:var(--muted);}
-.leg-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
-.cbar{height:4px;background:rgba(255,255,255,.1);border-radius:2px;margin:4px 0 6px;overflow:hidden;}
-.cfill{height:100%;border-radius:2px;transition:width .3s;}
-.ibox{background:rgba(59,130,246,.06);border:1px solid rgba(59,130,246,.2);
-  border-radius:6px;padding:8px 10px;font-size:10px;color:var(--muted);line-height:1.5;}
+:root {
+  --preto-suave: #1A1A1A;
+  --azul-fechado: #0F2027;
+  --cinza-prata: #BDC3C7;
+  --branco-puro: #FFFFFF;
+  --bg: #0F2027;
+  --bg2: #1A1A1A;
+  --card: rgba(15, 32, 39, 0.65);
+  --bdr: rgba(189, 195, 199, 0.18);
+  --bdr-hover: rgba(189, 195, 199, 0.45);
+  --txt: #FFFFFF;
+  --muted: #BDC3C7;
+  --red: #EF4444;
+  --ora: #F97316;
+  --yel: #EAB308;
+  --bl: #FFFFFF;
+  --blue: #BDC3C7;
+  --sw: 290px;
+  --pw: 370px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+  font-family: 'Inter', sans-serif;
+  background: var(--bg);
+  color: var(--txt);
+  overflow: hidden;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #1A1A1A;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(189, 195, 199, 0.25);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(189, 195, 199, 0.5);
+}
+
+#hdr {
+  height: 54px;
+  background: linear-gradient(90deg, #0F2027 0%, #1A1A1A 50%, #0F2027 100%);
+  border-bottom: 1px solid var(--bdr);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  position: relative;
+  z-index: 999;
+}
+
+.hdr-l {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo-shield {
+  width: 32px;
+  height: 32px;
+  background: linear-gradient(135deg, #1A1A1A, #0F2027);
+  border: 1px solid rgba(189, 195, 199, 0.35);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  box-shadow: 0 0 14px rgba(0, 0, 0, 0.5);
+}
+
+.hdr-l h1 {
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: .03em;
+  color: var(--branco-puro);
+  font-family: 'Outfit', sans-serif;
+}
+
+.hdr-l h1 span {
+  color: var(--cinza-prata);
+}
+
+.sim-badge {
+  font-size: 9px;
+  font-weight: 800;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(189, 195, 199, 0.3);
+  color: var(--branco-puro);
+  padding: 3px 8px;
+  border-radius: 4px;
+  letter-spacing: .1em;
+  animation: pulse 2.5s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; border-color: rgba(189, 195, 199, 0.5); }
+  50% { opacity: 0.7; border-color: rgba(189, 195, 199, 0.2); }
+}
+
+.hdr-r {
+  font-size: 11px;
+  color: var(--muted);
+  text-align: right;
+  line-height: 1.6;
+}
+
+.hdr-r b {
+  color: var(--branco-puro);
+}
+
+#main {
+  display: grid;
+  grid-template-columns: var(--sw) 1fr var(--pw);
+  height: calc(100vh - 54px - 34px);
+}
+
+#sidebar {
+  background: var(--bg2);
+  border-right: 1px solid var(--bdr);
+  overflow-y: auto;
+  padding: 14px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+#mapbox {
+  position: relative;
+}
+
+#map {
+  width: 100%;
+  height: 100%;
+}
+
+#patrol {
+  background: var(--bg2);
+  border-left: 1px solid var(--bdr);
+  overflow-y: auto;
+  padding: 14px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+#ftr {
+  height: 34px;
+  background: var(--azul-fechado);
+  border-top: 1px solid var(--bdr);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.panel {
+  background: var(--card);
+  border: 1px solid var(--bdr);
+  border-radius: 10px;
+  padding: 12px 14px;
+  transition: border-color 0.2s;
+}
+
+.panel:hover {
+  border-color: var(--bdr-hover);
+}
+
+.ptitle {
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .12em;
+  color: var(--branco-puro);
+  margin-bottom: 10px;
+}
+
+.copt {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-bottom: 3px;
+  transition: background .15s, color .15s;
+}
+
+.copt:hover {
+  background: rgba(189, 195, 199, 0.08);
+}
+
+.copt input {
+  accent-color: var(--cinza-prata);
+  width: 15px;
+  height: 15px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.copt label {
+  font-size: 12px;
+  cursor: pointer;
+  line-height: 1.3;
+  user-select: none;
+  color: var(--muted);
+  transition: color 0.15s;
+}
+
+.copt:hover label {
+  color: var(--branco-puro);
+}
+
+.srow {
+  margin-bottom: 8px;
+}
+
+.slbl {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+
+.slbl b {
+  color: var(--branco-puro);
+  font-weight: 800;
+}
+
+input[type=range] {
+  width: 100%;
+  accent-color: var(--cinza-prata);
+  cursor: pointer;
+}
+
+select {
+  width: 100%;
+  padding: 7px 10px;
+  background: var(--azul-fechado);
+  border: 1px solid var(--bdr);
+  border-radius: 6px;
+  color: var(--branco-puro);
+  font-size: 12px;
+  font-family: inherit;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+select:focus {
+  border-color: var(--cinza-prata);
+}
+
+.pcard {
+  background: var(--card);
+  border: 1px solid var(--bdr);
+  border-radius: 10px;
+  padding: 12px 14px;
+  cursor: pointer;
+  transition: all .2s cubic-bezier(0.16, 1, 0.3, 1);
+  margin-bottom: 6px;
+}
+
+.pcard:hover {
+  border-color: var(--bdr-hover);
+  background: rgba(15, 32, 39, 0.95);
+  transform: translateX(3px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+}
+
+.pcard.critico { border-left: 3px solid var(--red); }
+.pcard.alto { border-left: 3px solid var(--ora); }
+.pcard.medio { border-left: 3px solid var(--yel); }
+.pcard.baixo { border-left: 3px solid var(--cinza-prata); }
+
+.phdr {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+  flex-wrap: wrap;
+}
+
+.vnum {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--preto-suave);
+  background: var(--branco-puro);
+  padding: 2px 7px;
+  border-radius: 4px;
+  min-width: 36px;
+  text-align: center;
+}
+
+.utype {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--branco-puro);
+  background: rgba(189, 195, 199, 0.12);
+  border: 1px solid rgba(189, 195, 199, 0.2);
+  padding: 2px 7px;
+  border-radius: 4px;
+  flex: 1;
+}
+
+.rbadge {
+  font-size: 9px;
+  font-weight: 800;
+  padding: 2px 7px;
+  border-radius: 4px;
+  letter-spacing: .06em;
+}
+
+.rbadge.CRITICO { background: rgba(239,68,68,.25); color: #FCA5A5; }
+.rbadge.ALTO { background: rgba(249,115,22,.25); color: #FDBA74; }
+.rbadge.MEDIO { background: rgba(234,179,8,.25); color: #FDE68A; }
+.rbadge.BAIXO { background: rgba(189,195,199,.25); color: var(--branco-puro); }
+
+.pbairro {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--branco-puro);
+  margin-bottom: 5px;
+}
+
+.pdet {
+  font-size: 11px;
+  color: var(--muted);
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  line-height: 1.5;
+}
+
+.pdet b {
+  color: var(--branco-puro);
+}
+
+.mrow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px 0;
+  border-bottom: 1px solid rgba(189, 195, 199, 0.08);
+}
+
+.mrow:last-child {
+  border-bottom: none;
+}
+
+.mkey {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.mval {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--branco-puro);
+}
+
+.pp-hdr {
+  border-bottom: 1px solid var(--bdr);
+  padding-bottom: 10px;
+  margin-bottom: 4px;
+}
+
+.pp-title {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: .06em;
+  color: var(--branco-puro);
+  text-transform: uppercase;
+}
+
+.pp-sub {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 3px;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 35px 10px;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.empty-state b {
+  color: var(--branco-puro);
+  display: block;
+  margin-bottom: 6px;
+  font-size: 13px;
+}
+
+#map-overlay {
+  position: absolute;
+  bottom: 16px;
+  left: 16px;
+  z-index: 999;
+  background: rgba(26, 26, 26, 0.92);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--bdr);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 11px;
+  line-height: 1.6;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+#map-overlay b {
+  font-size: 11px;
+  color: var(--branco-puro);
+  display: block;
+  margin-bottom: 5px;
+  font-weight: 700;
+}
+
+.leg-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--muted);
+}
+
+.leg-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.ibox {
+  background: rgba(15, 32, 39, 0.7);
+  border: 1px solid var(--bdr);
+  border-radius: 8px;
+  padding: 9px 12px;
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.5;
+}
 </style>
 </head>
 <body>
 <div id="hdr">
   <div class="hdr-l">
-    <div style="width:28px;height:28px;background:linear-gradient(135deg,#2563EB,#1D4ED8);
-      border-radius:6px;display:flex;align-items:center;justify-content:center;
-      font-size:14px;font-weight:900;color:#fff;box-shadow:0 0 10px rgba(37,99,235,.5)">&#128737;</div>
-    <h1>PredPol <span>SP</span> &nbsp;<span style="font-weight:400;color:var(--muted);font-size:11px;">| Previsao XGBoost & Concentracao de Patrulha</span></h1>
-    <span class="sim-badge">XGBOOST ST</span>
+    <div class="logo-shield">&#128737;</div>
+    <h1>CONDOR <span>SHIELD</span> &nbsp;<span style="font-weight:400;color:var(--muted);font-size:11px;">| Inteligência Policial Preditiva & Patrulha</span></h1>
+    <span class="sim-badge">XGBOOST POISSON</span>
   </div>
   <div class="hdr-r">
-    Modelo: <b>XGBoost Poisson Hibrido</b> &nbsp;|&nbsp; Grade: <b>60&times;60</b> &nbsp;|&nbsp; Delegacias: <b>95</b><br>
+    Modelo: <b>XGBoost Espaço-Temporal</b> &nbsp;|&nbsp; Grade: <b>60&times;60</b> &nbsp;|&nbsp; Delegacias: <b>95</b><br>
     Fonte: <b>SIPCV / SSP-SP</b> (Out 2025&ndash;Mai 2026)
   </div>
 </div>
@@ -283,85 +653,84 @@ select:focus{border-color:var(--blue);}
   <div id="sidebar">
     <div class="panel">
       <div class="ptitle">Crimes Selecionados</div>
-      <div class="copt"><input type="checkbox" id="ck0" checked><label for="ck0">Tentativa de Homicidio</label></div>
-      <div class="copt"><input type="checkbox" id="ck1" checked><label for="ck1">Homicidio Doloso</label></div>
-      <div class="copt"><input type="checkbox" id="ck2" checked><label for="ck2">Lesao Corp. Seg. Morte</label></div>
-      <div class="copt"><input type="checkbox" id="ck3" checked><label for="ck3">Latrocinio</label></div>
+      <div class="copt"><input type="checkbox" id="ck0" checked><label for="ck0">Tentativa de Homicídio</label></div>
+      <div class="copt"><input type="checkbox" id="ck1" checked><label for="ck1">Homicídio Doloso</label></div>
+      <div class="copt"><input type="checkbox" id="ck2" checked><label for="ck2">Lesão Corp. Seg. Morte</label></div>
+      <div class="copt"><input type="checkbox" id="ck3" checked><label for="ck3">Latrocínio</label></div>
     </div>
     <div class="panel">
       <div class="ptitle">Camadas do Mapa</div>
       <div class="copt"><input type="checkbox" id="chk-pred" checked><label for="chk-pred">&#128308; Pontos Previstos (XGBoost)</label></div>
-      <div class="copt"><input type="checkbox" id="chk-val" checked><label for="chk-val">&#9899; Ocorrencias Historicas Reais</label></div>
+      <div class="copt"><input type="checkbox" id="chk-val" checked><label for="chk-val">&#9899; Ocorrências Históricas Reais</label></div>
     </div>
     <div class="panel">
-      <div class="ptitle">Horizonte de Previsao</div>
+      <div class="ptitle">Horizonte de Previsão</div>
       <div class="srow">
-        <div class="slbl"><span>Meses a frente</span><b id="hv">1</b></div>
+        <div class="slbl"><span>Meses à frente</span><b id="hv">1</b></div>
         <input type="range" id="hslider" min="1" max="6" value="1">
-        <div id="htarget" style="font-size:11px;color:var(--bl);margin-top:4px;font-weight:600;"></div>
+        <div id="htarget" style="font-size:11px;color:var(--bl);margin-top:4px;font-weight:700;"></div>
       </div>
     </div>
     <div class="panel">
-      <div class="ptitle">Viaturas Disponiveis</div>
+      <div class="ptitle">Viaturas Disponíveis</div>
       <div class="srow">
         <div class="slbl"><span>Unidades</span><b id="uv">5</b></div>
         <input type="range" id="uslider" min="1" max="20" value="5">
       </div>
       <div class="ptitle" style="margin-top:8px;">Tipo de Patrulha</div>
       <select id="psel">
-        <option value="AUTO">Atribuicao automatica</option>
+        <option value="AUTO">Atribuição Automática</option>
         <option value="ROCAM/M">ROCAM/M</option>
-        <option value="RPA">RPA (Radio Patrulha)</option>
-        <option value="Forca Tatica">Forca Tatica</option>
+        <option value="RPA">RPA (Rádio Patrulha)</option>
+        <option value="Forca Tatica">Força Tática</option>
         <option value="ROTAM">ROTAM</option>
         <option value="GCM">Guarda Civil Metropolitana</option>
-        <option value="CHOQUE">Batalhao de Choque</option>
+        <option value="CHOQUE">Batalhão de Choque</option>
       </select>
     </div>
     <div class="panel" id="mpanel">
-      <div class="ptitle">Metricas de Risco da Previsao</div>
+      <div class="ptitle">Métricas de Risco Preditivo</div>
       <div id="mcontent">
-        <div class="mrow"><span class="mkey">Probabilidade Media nas Zonas</span><span class="mval">--</span></div>
-        <div class="mrow"><span class="mkey">Pontos Previstos no Mes</span><span class="mval">--</span></div>
-        <div class="mrow"><span class="mkey">Modelo</span><span class="mval">KDE + XGBoost</span></div>
+        <div class="mrow"><span class="mkey">Probabilidade Média nas Zonas</span><span class="mval">--</span></div>
+        <div class="mrow"><span class="mkey">Pontos Previstos no Mês</span><span class="mval">--</span></div>
+        <div class="mrow"><span class="mkey">Modelo</span><span class="mval">XGBoost Poisson</span></div>
       </div>
     </div>
     <div class="ibox">
-      &#9888; Atualização em tempo real: As viaturas são direcionadas aos maiores focos de risco e densidade de ocorrências previstas pelo XGBoost.
+      &#9888; Atualização em tempo real: As viaturas são direcionadas aos maiores focos de risco e densidade de ocorrências previstas pelo CONDOR SHIELD (XGBoost).
     </div>
   </div>
   <div id="mapbox">
     <div id="map"></div>
     <div id="map-overlay">
-      <b>Legenda (Risco Preditivo & Areas Quentes)</b>
-      <div class="leg-row"><div class="leg-dot" style="background:#EF4444"></div> Risco CRITICO (&gt;40% prob.)</div>
+      <b>Legenda (Risco Preditivo CONDOR SHIELD)</b>
+      <div class="leg-row"><div class="leg-dot" style="background:#EF4444"></div> Risco CRÍTICO (&gt;40% prob.)</div>
       <div class="leg-row"><div class="leg-dot" style="background:#F97316"></div> Risco ALTO (25-40% prob.)</div>
-      <div class="leg-row"><div class="leg-dot" style="background:#EAB308"></div> Risco MEDIO (10-25% prob.)</div>
-      <div class="leg-row"><div class="leg-dot" style="background:#3B82F6"></div> Risco BAIXO (&lt;10% prob.)</div>
+      <div class="leg-row"><div class="leg-dot" style="background:#EAB308"></div> Risco MÉDIO (10-25% prob.)</div>
+      <div class="leg-row"><div class="leg-dot" style="background:#BDC3C7"></div> Risco BAIXO (&lt;10% prob.)</div>
       <div class="leg-row" style="margin-top:4px"><div class="leg-dot" style="background:#F43F5E;border:1px solid #fff;"></div> &nbsp;Ponto de Crime Previsto (XGBoost)</div>
       <div class="leg-row" style="margin-top:4px"><div class="leg-dot"
         style="background:linear-gradient(90deg,#0EA5E9,#10B981,#F59E0B,#EF4444);border-radius:3px;width:28px;height:6px"></div>
-        &nbsp;Area Quente (Densidade de Risco)</div>
+        &nbsp;Área Quente (Densidade de Risco)</div>
     </div>
   </div>
   <div id="patrol">
     <div class="pp-hdr">
       <div class="pp-title">Direcionamento de Viaturas</div>
-      <div class="pp-sub" id="pp-sub">Alocacao automatica em tempo real</div>
+      <div class="pp-sub" id="pp-sub">Alocação automática em tempo real</div>
     </div>
     <div id="plist">
       <div class="empty-state">
-        <b>&#128205; Carregando previsao...</b>
+        <b>&#128205; Carregando previsão CONDOR SHIELD...</b>
       </div>
     </div>
   </div>
 </div>
 <div id="ftr">
-  <span>Dados: SIPCV/SSP-SP &nbsp;|&nbsp; Previsao XGBoost Poisson &nbsp;|&nbsp; Direcionamento Preditivo de Patrulha</span>
+  <span>CONDOR SHIELD &nbsp;|&nbsp; Previsão XGBoost Poisson &nbsp;|&nbsp; Direcionamento Preditivo de Patrulha &nbsp;|&nbsp; SSP-SP</span>
   <span id="fstatus" style="color:var(--bl);font-weight:600;"></span>
 </div>
-<script>
-'''
+<script>'''
 
 TAIL = '''
 const BAIRROS=[
@@ -389,13 +758,13 @@ const BPMS=['1o BPM/M (Se)','5o BPM/M (Bras)','7o BPM/M (Ipiranga)','8o BPM/M (P
   '12o BPM/M (S.Mateus)','13o BPM/M (Santana)','14o BPM/M (Tatuape)','15o BPM/M (Jabaquara)',
   '17o BPM/M (C.Limpo)','19o BPM/M (Guarulhos)','21o BPM/M (Pirituba)','23o BPM/M (Itaquera)',
   '24o BPM/M (Guaianazes)','27o BPM/M (Diadema)','37o BPM/M (Osasco)'];
-const RCOLS={CRITICO:'#EF4444',ALTO:'#F97316',MEDIO:'#EAB308',BAIXO:'#3B82F6'};
+const RCOLS={CRITICO:'#EF4444',ALTO:'#F97316',MEDIO:'#EAB308',BAIXO:'#BDC3C7'};
 const MONTHS=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
 
 // ── MAP SETUP ─────────────────────────────────────────────────────────────────
 const map=L.map('map').setView([-23.5505,-46.6333],12);
 L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{
-  attribution:'&copy; OpenStreetMap &amp; CARTO',
+  attribution:'&copy; OpenStreetMap &amp; CARTO | CONDOR SHIELD',
   subdomains:'abcd',maxZoom:18
 }).addTo(map);
 
@@ -558,7 +927,7 @@ function renderHeatmap(keys, h){
   heatL = L.heatLayer(pts, {
     radius: 35, blur: 22, minOpacity: 0.12, maxZoom: 16, max: 0.25,
     gradient: {
-      0.10: 'rgba(30,58,138,0.2)',
+      0.10: 'rgba(15,32,39,0.3)',
       0.30: '#0EA5E9',
       0.50: '#10B981',
       0.70: '#F59E0B',
@@ -577,56 +946,56 @@ function renderZones(zones, assigns, activePredPts){
   for (const [zi, zd] of Object.entries(zu)) {
     const col = RCOLS[zd.risk];
     const circle = L.circle([zd.z.lat, zd.z.lon], {
-      radius: zd.z.radM, color: col, fillColor: col, fillOpacity: 0.14,
+      radius: zd.z.radM, color: col, fillColor: col, fillOpacity: 0.15,
       weight: 2, dashArray: '6,3'
     }).addTo(map);
     
     const popBody = zd.units.map(u => `<b>V${String(u.num).padStart(2,'0')}</b> ${u.ut}`).join('<br>');
-    circle.bindPopup(`<div style="font-family:sans-serif;font-size:12px">
-      <b style="color:${col}">${zd.bairro}</b><br>
-      <b>Probabilidade de Ocorrencia: ${zd.probPct.toFixed(1)}%</b><br>
-      Nivel de Risco: <span style="color:${col};font-weight:700">${zd.risk}</span><br><br>${popBody}</div>`);
+    circle.bindPopup(`<div style="font-family:'Inter',sans-serif;font-size:12px;background:#1A1A1A;color:#FFFFFF;padding:4px;border-radius:6px">
+      <b style="color:${col};font-size:13px">${zd.bairro}</b><br>
+      <b>Probabilidade de Ocorrência: ${zd.probPct.toFixed(1)}%</b><br>
+      Nível de Risco: <span style="color:${col};font-weight:700">${zd.risk}</span><br><br>${popBody}</div>`);
     zoneL.push(circle);
 
     const lbl = zd.units.length > 1 ? zd.units.length + 'V' : 'V' + String(zd.units[0].num).padStart(2,'0');
     const icon = L.divIcon({
-      html: `<div style="background:${col};color:#fff;border-radius:50%;width:34px;height:34px;
+      html: `<div style="background:#1A1A1A;color:#FFFFFF;border-radius:50%;width:34px;height:34px;
         display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;
-        border:2px solid rgba(255,255,255,.75);box-shadow:0 3px 12px rgba(0,0,0,.7);
-        font-family:Inter,sans-serif">${lbl}</div>`,
+        border:2px solid ${col};box-shadow:0 3px 12px rgba(0,0,0,.8);
+        font-family:'Inter',sans-serif">${lbl}</div>`,
       className: '', iconSize: [34, 34], iconAnchor: [17, 17]
     });
     const mk = L.marker([zd.z.lat, zd.z.lon], {icon}).addTo(map);
-    mk.bindPopup(`<div style="font-family:sans-serif;font-size:12px">
-      <b>${zd.bairro}</b><br>
-      <b>Probabilidade de Ocorrencia: ${zd.probPct.toFixed(1)}%</b><br>
-      Nivel de Risco: <span style="color:${col};font-weight:700">${zd.risk}</span><br><br>${popBody}</div>`);
+    mk.bindPopup(`<div style="font-family:'Inter',sans-serif;font-size:12px;background:#1A1A1A;color:#FFFFFF;padding:4px;border-radius:6px">
+      <b style="font-size:13px;color:#FFFFFF">${zd.bairro}</b><br>
+      <b>Probabilidade de Ocorrência: ${zd.probPct.toFixed(1)}%</b><br>
+      Nível de Risco: <span style="color:${col};font-weight:700">${zd.risk}</span><br><br>${popBody}</div>`);
     markL.push(mk);
 
     // Conecta a viatura aos pontos de ocorrência previstos mais próximos na zona
     const nearPred = activePredPts.filter(p => Math.hypot(p.lat - zd.z.lat, p.lon - zd.z.lon) < 0.04).slice(0, 6);
     for (const np of nearPred) {
       const rl = L.polyline([[zd.z.lat, zd.z.lon], [np.lat, np.lon]],
-        {color: col, weight: 1.5, opacity: 0.55, dashArray: '3,4'}).addTo(map);
+        {color: col, weight: 1.5, opacity: 0.65, dashArray: '3,4'}).addTo(map);
       routeL.push(rl);
     }
   }
 }
 
-// ── PATROL PANEL (COM INFORMAÇÃO COMPLETA DE RISCO PERCENTUAL) ────────────────
+// ── PATROL PANEL (DIRECIONAMENTO CONDOR SHIELD) ───────────────────────────────
 function renderPatrolPanel(assigns, h){
   const target = getTargetMonth(h);
-  document.getElementById('pp-sub').textContent = 'Alocacao automatica para ' + target + ' | ' + assigns.length + ' viaturas';
+  document.getElementById('pp-sub').textContent = 'Alocação para ' + target + ' | ' + assigns.length + ' viaturas';
 
-  let html = `<div class="panel" style="margin-bottom:6px">
-    <div class="ptitle">Direcionamento Preditivo de Viaturas</div>
-    <div style="font-size:12px;font-weight:600;color:var(--bl);margin-bottom:4px">Envio para os Maiores Focos de Concentracao</div>
-    <div style="font-size:10px;color:var(--muted)">Horizonte: +${h} mes(es) | Alvo: ${target}</div>
+  let html = `<div class="panel" style="margin-bottom:8px">
+    <div class="ptitle">CONDOR SHIELD — Despacho Preditivo</div>
+    <div style="font-size:12px;font-weight:700;color:var(--branco-puro);margin-bottom:4px">Alocação Estrita nos Maiores Focos de Risco</div>
+    <div style="font-size:10px;color:var(--muted)">Horizonte: +${h} mês(es) | Alvo: ${target}</div>
   </div>`;
 
   for (const a of assigns) {
     const rc = a.risk.toLowerCase();
-    const rl = {CRITICO:'CRITICO',ALTO:'ALTO',MEDIO:'MEDIO',BAIXO:'BAIXO'}[a.risk];
+    const rl = {CRITICO:'CRÍTICO',ALTO:'ALTO',MEDIO:'MÉDIO',BAIXO:'BAIXO'}[a.risk];
     html += `<div class="pcard ${rc}" onclick="focusZone(${a.zone.lat},${a.zone.lon},${a.zone.radM})">
       <div class="phdr">
         <span class="vnum">V${String(a.num).padStart(2,'0')}</span>
@@ -635,10 +1004,10 @@ function renderPatrolPanel(assigns, h){
       </div>
       <div class="pbairro">&#128205; ${a.bairro}</div>
       <div class="pdet">
-        <span>&#128202; Probabilidade de Ocorrencia: <b>${a.probPct.toFixed(1)}%</b></span>
-        <span>&#9888; Nivel de Risco Preditivo: <b style="color:${RCOLS[a.risk]}">${a.risk}</b></span>
+        <span>&#128202; Probabilidade Estimada: <b>${a.probPct.toFixed(1)}%</b></span>
+        <span>&#9888; Nível de Risco Preditivo: <b style="color:${RCOLS[a.risk]}">${a.risk}</b></span>
         <span>&#127963; ${a.bpm}</span>
-        <span>&#8987; Horario Recomendado: ${a.tStr}</span>
+        <span>&#8987; Horário Recomendado: ${a.tStr}</span>
         <span>&#128204; Coordenadas: ${a.zone.lat.toFixed(4)}, ${a.zone.lon.toFixed(4)}</span>
         <span>&#128308; Foco Preditivo ${a.zi+1} de ${Math.min(assigns.length, 12)}</span>
       </div>
@@ -653,11 +1022,12 @@ function updateMetrics(keys, assigns, h, totalPredPts){
   const probMedia = probsVisiveis.length
     ? (probsVisiveis.reduce((s,v)=>s+v,0) / probsVisiveis.length) : 0;
   document.getElementById('mcontent').innerHTML = `
-    <div class="mrow"><span class="mkey">Probabilidade Media nas Zonas</span><span class="mval">${probMedia.toFixed(1)}%</span></div>
-    <div class="mrow"><span class="mkey">Pontos Previstos no Mes</span><span class="mval">${totalPredPts}</span></div>
-    <div class="mrow"><span class="mkey">Horizonte</span><span class="mval">+${h} mes(es)</span></div>
-    <div class="mrow"><span class="mkey">Polos de Atuacao</span><span class="mval">${Math.min(assigns.length, 12)}</span></div>
+    <div class="mrow"><span class="mkey">Probabilidade Média nas Zonas</span><span class="mval">${probMedia.toFixed(1)}%</span></div>
+    <div class="mrow"><span class="mkey">Pontos Previstos no Mês</span><span class="mval">${totalPredPts}</span></div>
+    <div class="mrow"><span class="mkey">Horizonte</span><span class="mval">+${h} mês(es)</span></div>
+    <div class="mrow"><span class="mkey">Polos de Atuação</span><span class="mval">${Math.min(assigns.length, 12)}</span></div>
     <div class="mrow"><span class="mkey">Viaturas Alocadas</span><span class="mval">${assigns.length}</span></div>
+    <div class="mrow"><span class="mkey">Modelo</span><span class="mval">XGBoost Poisson</span></div>
   `;
 }
 
@@ -667,7 +1037,7 @@ function focusZone(lat, lon, radM){
   map.flyTo([lat, lon], zoom, {duration: 1.0});
 }
 
-// ── MAIN RUN (AUTOMATICA LIVE) ────────────────────────────────────────────────
+// ── MAIN RUN (AUTOMÁTICA LIVE) ────────────────────────────────────────────────
 function runPrediction(){
   const keys = getSelectedKeys();
   const h = parseInt(document.getElementById('hslider').value);
@@ -695,11 +1065,11 @@ function runPrediction(){
         radius: 5, color: '#F43F5E', fillColor: '#F43F5E',
         fillOpacity: 0.85, weight: 1.5
       }).bindPopup(
-        `<div style="font-size:11px;font-family:sans-serif">
-          <b style="color:#E11D48">&#9888; Crime Previsto (XGBoost)</b><br>
+        `<div style="font-size:11px;font-family:'Inter',sans-serif;background:#1A1A1A;color:#FFFFFF;padding:4px;border-radius:4px">
+          <b style="color:#F43F5E">&#9888; Crime Previsto (XGBoost)</b><br>
           <b>${p.tipo}</b><br>
           Delegacia: ${p.deleg}<br>
-          Expectativa: ${p.lambda} crimes/mes<br>
+          Expectativa: ${p.lambda} crimes/mês<br>
           Probabilidade: ${p.prob}%
         </div>`
       ).addTo(map);
@@ -718,9 +1088,9 @@ function runPrediction(){
     if (vf.length) {
       const vLayer = L.layerGroup();
       for (const p of vf) {
-        L.circleMarker([p.lat, p.lon], {radius: 3, color: '#64748B', fillColor: '#64748B',
+        L.circleMarker([p.lat, p.lon], {radius: 3, color: '#BDC3C7', fillColor: '#BDC3C7',
           fillOpacity: .5, weight: 0}).bindPopup(
-          `<div style="font-size:11px;font-family:sans-serif"><b>${p.tipo}</b> (Historico)<br>${p.data}<br>${p.local}</div>`
+          `<div style="font-size:11px;font-family:'Inter',sans-serif;background:#1A1A1A;color:#FFFFFF;padding:4px;border-radius:4px"><b>${p.tipo}</b> (Histórico)<br>${p.data}<br>${p.local}</div>`
         ).addTo(vLayer);
       }
       vLayer.addTo(map);
@@ -730,7 +1100,7 @@ function runPrediction(){
 
   const target = getTargetMonth(h);
   document.getElementById('fstatus').textContent =
-    'Previsao automatica para ' + target + ' | ' + assigns.length + ' viaturas direcionadas aos focos de maior risco';
+    'CONDOR SHIELD: ' + target + ' | ' + assigns.length + ' viaturas direcionadas aos focos críticos';
 }
 
 // ── EVENT LISTENERS (REATIVIDADE LIVE AUTOMÁTICA EM TEMPO REAL) ──────────────
