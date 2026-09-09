@@ -925,22 +925,155 @@ select:focus {
   display: block;
 }
 
-/* ── MAPA COMPARATIVO ── */
+/* ── DEBRIEFING OPERACIONAL (LAYOUT LATERAL + MAPA) ── */
+.modal-debrief-box {
+  max-width: 1140px !important;
+  width: 95vw;
+  max-height: 92vh;
+}
+
+.debrief-grid {
+  display: grid;
+  grid-template-columns: 310px 1fr;
+  gap: 18px;
+  align-items: stretch;
+}
+
+@media (max-width: 860px) {
+  .debrief-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+}
+
+.debrief-sidebar {
+  display: flex;
+  flex-direction: column;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--bdr);
+  border-radius: 10px;
+  padding: 16px 14px;
+  text-align: center;
+  gap: 12px;
+}
+
+.debrief-sidebar-header {
+  text-align: center;
+}
+
+.debrief-sidebar-title {
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--branco-puro);
+  margin-top: 6px;
+  margin-bottom: 3px;
+  font-family: 'Outfit', sans-serif;
+}
+
+.debrief-sidebar-subtitle {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.debrief-sidebar-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 10px;
+  background: rgba(15, 32, 39, 0.85);
+  border: 1px solid var(--bdr);
+  border-radius: 8px;
+}
+
+.debrief-sidebar-stats .dsb-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 6px;
+  border: 1px solid rgba(189, 195, 199, 0.08);
+}
+
+.debrief-sidebar-stats .dsb-item .dsb-lbl {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  text-align: left;
+  letter-spacing: .04em;
+}
+
+.debrief-sidebar-stats .dsb-item .dsb-val {
+  font-size: 17px;
+  font-weight: 900;
+  margin-top: 0;
+  font-family: 'Outfit', sans-serif;
+}
+
+.debrief-summary-box {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--bdr);
+  border-radius: 8px;
+  padding: 12px;
+  text-align: left;
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+#debrief-text-summary {
+  font-weight: 700;
+  color: var(--branco-puro);
+  margin-bottom: 6px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(189, 195, 199, 0.1);
+  font-size: 11.5px;
+}
+
+#debrief-details {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.debrief-map-panel {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.debrief-map-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.debrief-map-title {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--branco-puro);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
+
 #comparison-map {
   width: 100%;
-  height: 350px;
+  height: 450px;
+  min-height: 380px;
   border-radius: 10px;
   border: 1px solid var(--bdr);
-  margin-top: 4px;
   overflow: hidden;
 }
 
 .cmp-legend {
   display: flex;
-  gap: 16px;
+  gap: 14px;
   justify-content: center;
+  align-items: center;
   flex-wrap: wrap;
-  margin-top: 10px;
+  margin-top: 8px;
   font-size: 11px;
   color: var(--muted);
 }
@@ -1158,50 +1291,60 @@ select:focus {
 
 <!-- MODAL 2: DEBRIEFING / RESULTADO DA PARTIDA -->
 <div class="modal-overlay" id="modal-debriefing">
-  <div class="modal-box" style="max-width:900px;">
+  <div class="modal-box modal-debrief-box">
     <div class="modal-header">
       <div class="modal-title">&#127942; Debriefing Operacional &mdash; Resultado da Missão</div>
       <button class="modal-close" id="btn-close-debriefing">&times;</button>
     </div>
-    <div class="modal-body" style="text-align:center;">
-      <div style="margin-bottom:10px" id="debrief-seal-container">
-        <!-- Badge do Selo -->
-      </div>
-      <h3 style="font-size:18px;color:var(--branco-puro);margin-bottom:4px" id="debrief-title">Desempenho Registrado</h3>
-      <p style="font-size:12px;color:var(--muted);margin-bottom:14px" id="debrief-subtitle">Comandante avaliado frente ao modelo preditivo</p>
+    <div class="modal-body" style="padding:16px 20px;">
+      <div class="debrief-grid">
+        <!-- COLUNA LATERAL DE RESULTADOS -->
+        <div class="debrief-sidebar">
+          <div class="debrief-sidebar-header">
+            <div id="debrief-seal-container">
+              <!-- Badge do Selo -->
+            </div>
+            <h3 class="debrief-sidebar-title" id="debrief-title">Desempenho Registrado</h3>
+            <p class="debrief-sidebar-subtitle" id="debrief-subtitle">Comandante avaliado frente ao modelo preditivo</p>
+          </div>
 
-      <div class="debrief-stat-box">
-        <div class="dsb-item">
-          <div class="dsb-lbl">Sua Cobertura</div>
-          <div class="dsb-val" id="dsb-user-cov" style="color:#00F2FE">0</div>
-        </div>
-        <div class="dsb-item">
-          <div class="dsb-lbl">CONDOR SHIELD</div>
-          <div class="dsb-val" id="dsb-model-cov" style="color:#F43F5E">0</div>
-        </div>
-        <div class="dsb-item">
-          <div class="dsb-lbl">Eficiência Relativa</div>
-          <div class="dsb-val" id="dsb-eff" style="color:#FDE047">0.0%</div>
-        </div>
-      </div>
+          <div class="debrief-stat-box debrief-sidebar-stats">
+            <div class="dsb-item">
+              <div class="dsb-lbl">Sua Cobertura</div>
+              <div class="dsb-val" id="dsb-user-cov" style="color:#00F2FE">0</div>
+            </div>
+            <div class="dsb-item">
+              <div class="dsb-lbl">CONDOR SHIELD</div>
+              <div class="dsb-val" id="dsb-model-cov" style="color:#F43F5E">0</div>
+            </div>
+            <div class="dsb-item">
+              <div class="dsb-lbl">Eficiência Relativa</div>
+              <div class="dsb-val" id="dsb-eff" style="color:#FDE047">0.0%</div>
+            </div>
+          </div>
 
-      <div style="background:rgba(255,255,255,0.04);border:1px solid var(--bdr);border-radius:8px;padding:12px;text-align:left;font-size:11px;line-height:1.7;">
-        <div id="debrief-text-summary" style="font-weight:700;color:var(--branco-puro);margin-bottom:4px">
-          Ocorrências preditas cobertas: Você 0 de 0 | CONDOR SHIELD 0 de 0
+          <div class="debrief-summary-box">
+            <div id="debrief-text-summary">
+              Ocorrências preditas cobertas: Você 0 de 0 | CONDOR SHIELD 0 de 0
+            </div>
+            <div id="debrief-details">
+              Horizonte: +1 mês | Tempo de Despacho: 0s | Raio de Ação: 1,5 km
+            </div>
+          </div>
         </div>
-        <div style="color:var(--muted)" id="debrief-details">
-          Horizonte: +1 mês | Tempo de Despacho: 0s | Raio de Ação: 1,5 km
-        </div>
-      </div>
 
-      <!-- MAPA COMPARATIVO -->
-      <div style="text-align:left;margin-top:16px;">
-        <div style="font-size:12px;font-weight:800;color:var(--branco-puro);margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em;">&#128506; Mapa Comparativo de Alocação</div>
-        <div id="comparison-map"></div>
-        <div class="cmp-legend">
-          <div class="cmp-legend-item"><div class="cmp-legend-dot" style="background:#00F2FE"></div> Viaturas do Comandante</div>
-          <div class="cmp-legend-item"><div class="cmp-legend-dot" style="background:#F43F5E"></div> Viaturas CONDOR SHIELD</div>
-          <div class="cmp-legend-item"><div class="cmp-legend-dot" style="background:#F59E0B"></div> Pontos Preditos Avaliados</div>
+        <!-- COLUNA PRINCIPAL: MAPA COMPARATIVO -->
+        <div class="debrief-map-panel">
+          <div class="debrief-map-header">
+            <div class="debrief-map-title">&#128506; Mapa Comparativo de Alocação</div>
+          </div>
+          <div id="comparison-map"></div>
+          <div class="cmp-legend">
+            <div class="cmp-legend-item"><div class="cmp-legend-dot" style="background:#00F2FE"></div> Viaturas do Comandante</div>
+            <div class="cmp-legend-item"><div class="cmp-legend-dot" style="background:#F43F5E"></div> Viaturas CONDOR SHIELD</div>
+            <div class="cmp-legend-item"><div class="cmp-legend-dot" style="background:#F59E0B"></div> Pontos Preditos</div>
+            <div class="cmp-legend-item"><div class="cmp-legend-dot" style="background:linear-gradient(90deg, #0EA5E9, #EF4444);width:14px;border-radius:3px;"></div> Heatmap (Densidade)</div>
+          </div>
         </div>
       </div>
     </div>
@@ -2430,7 +2573,9 @@ function revealPrediction(isTimeout = false) {
     isTimeout: isTimeout,
     userCoords: GAME.manualUnits,
     modelAssigns: assigns,
-    activePredPts: activePredPts
+    activePredPts: activePredPts,
+    keys: f.keys,
+    h: f.h
   });
 }
 
@@ -2456,7 +2601,7 @@ function showDebriefingModal(res) {
 
   // Inicializa mapa comparativo após modal ficar visível
   setTimeout(() => {
-    initComparisonMap(res.userCoords || [], res.modelAssigns || [], res.activePredPts || []);
+    initComparisonMap(res.userCoords || [], res.modelAssigns || [], res.activePredPts || [], res.keys, res.h);
   }, 200);
 }
 
@@ -2557,6 +2702,7 @@ function clearLeaderboard() {
 let comparisonMap = null;
 let comparisonTileLayer = null;
 let comparisonLabelLayer = null;
+let comparisonHeatLayer = null;
 
 function updateComparisonMapTiles() {
   if (!comparisonMap) return;
@@ -2594,7 +2740,7 @@ function updateComparisonMapTiles() {
   }
 }
 
-function initComparisonMap(userCoords, modelAssigns, predPts) {
+function initComparisonMap(userCoords, modelAssigns, predPts, keysParam, hParam) {
   destroyComparisonMap();
   const mapDiv = document.getElementById('comparison-map');
   if (!mapDiv) return;
@@ -2602,6 +2748,36 @@ function initComparisonMap(userCoords, modelAssigns, predPts) {
   comparisonMap = L.map('comparison-map', { zoomControl: true, attributionControl: true }).setView([-23.5505, -46.6333], 12);
 
   updateComparisonMapTiles();
+
+  // Heatmap de áreas de calor preditivas (idêntico ao modo livre)
+  const h = hParam || (GAME.frozenParams && GAME.frozenParams.h) || parseInt(document.getElementById('hslider').value) || 1;
+  const keys = (keysParam && keysParam.length) ? keysParam : ((GAME.frozenParams && GAME.frozenParams.keys && GAME.frozenParams.keys.length) ? GAME.frozenParams.keys : getSelectedKeys());
+  const grid = combineGrids(keys, h);
+  const N = DATA.grid_n;
+  const heatPts = [];
+  let maxV = 0;
+  for (let i = 0; i < N; i++) for (let j = 0; j < N; j++) {
+    if (grid[i][j] > maxV) maxV = grid[i][j];
+  }
+  for (let i = 0; i < N; i++) for (let j = 0; j < N; j++) {
+    if (grid[i][j] > 1.0) {
+      const normVal = maxV > 0 ? (grid[i][j] / maxV) : 0;
+      heatPts.push([DATA.lat_arr[i], DATA.lon_arr[j], normVal]);
+    }
+  }
+  if (heatPts.length) {
+    comparisonHeatLayer = L.heatLayer(heatPts, {
+      radius: 35, blur: 22, minOpacity: 0.12, maxZoom: 16, max: 0.25,
+      gradient: {
+        0.10: 'rgba(15,32,39,0.3)',
+        0.30: '#0EA5E9',
+        0.50: '#10B981',
+        0.70: '#F59E0B',
+        0.85: '#F97316',
+        1.00: '#EF4444'
+      }
+    }).addTo(comparisonMap);
+  }
 
   const bounds = L.latLngBounds([]);
 
@@ -2651,6 +2827,7 @@ function destroyComparisonMap() {
     comparisonMap = null;
     comparisonTileLayer = null;
     comparisonLabelLayer = null;
+    comparisonHeatLayer = null;
   }
 }
 
