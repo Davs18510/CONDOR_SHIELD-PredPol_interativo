@@ -1122,6 +1122,8 @@ select:focus {
   <div class="hdr-actions">
     <button class="btn-hdr btn-cmd" id="btn-open-briefing">&#127918; Modo Comandante</button>
     <button class="btn-hdr" id="btn-open-leaderboard">&#127942; Placar Geral</button>
+    <button class="btn-hdr" id="btn-open-result">&#128202; Resultado Interativo</button>
+    <button class="btn-hdr" id="btn-open-freemode">&#127760; Modo Livre</button>
   </div>
   <div class="hdr-r">
     Modelo: <b>XGBoost Espaço-Temporal</b> &nbsp;|&nbsp; Grade: <b>60&times;60</b> &nbsp;|&nbsp; Delegacias: <b>95</b><br>
@@ -2134,7 +2136,8 @@ const GAME = {
   timerInterval: null,
   timeRemaining: 60,
   timeSpent: 0,
-  lastMatchSaved: false
+  lastMatchSaved: false,
+  lastDebriefData: null
 };
 
 // ── PERSISTÊNCIA DO LEADERBOARD COM TRY/CATCH ─────────────────────────────────
@@ -2561,8 +2564,7 @@ function revealPrediction(isTimeout = false) {
     GAME.lastMatchSaved = true;
   }
 
-  // Exibe modal de debriefing com dados para mapa comparativo
-  showDebriefingModal({
+  const debriefData = {
     userCovered: userCoveredCount,
     modelCovered: modelCoveredCount,
     totalPredPoints: totalConsideredPts,
@@ -2576,12 +2578,28 @@ function revealPrediction(isTimeout = false) {
     activePredPts: activePredPts,
     keys: f.keys,
     h: f.h
-  });
+  };
+
+  GAME.lastDebriefData = debriefData;
+
+  // Exibe modal de debriefing com dados para mapa comparativo
+  showDebriefingModal(debriefData);
 }
 
 function showDebriefingModal(res) {
+  if (!res && GAME.lastDebriefData) {
+    res = GAME.lastDebriefData;
+  }
+  if (!res) return;
+
+  closeTimeoutModal();
+  closeLeaderboardModal();
+  closeBriefingModal();
+
   const container = document.getElementById('debrief-seal-container');
-  container.innerHTML = '<span class="badge-seal ' + res.sealClass + '">&#9733; ' + res.sealName + '</span>';
+  if (container) {
+    container.innerHTML = '<span class="badge-seal ' + res.sealClass + '">&#9733; ' + res.sealName + '</span>';
+  }
 
   document.getElementById('dsb-user-cov').textContent = res.userCovered + ' / ' + res.totalPredPoints;
   document.getElementById('dsb-model-cov').textContent = res.modelCovered + ' / ' + res.totalPredPoints;
@@ -2590,10 +2608,12 @@ function showDebriefingModal(res) {
   const summaryText = 'Ocorrências preditas cobertas: Você ' + res.userCovered + ' de ' + res.totalPredPoints + ' | CONDOR SHIELD ' + res.modelCovered + ' de ' + res.totalPredPoints;
   document.getElementById('debrief-text-summary').textContent = summaryText;
 
-  const hTarget = getTargetMonth(GAME.frozenParams.h);
+  const hVal = res.h || (GAME.frozenParams ? GAME.frozenParams.h : 1);
+  const unitsVal = (res.userCoords ? res.userCoords.length : 0) || (GAME.frozenParams ? GAME.frozenParams.n : 5);
+  const hTarget = getTargetMonth(hVal);
   document.getElementById('debrief-details').innerHTML =
-    'Horizonte: <b>+' + GAME.frozenParams.h + ' mês (' + hTarget + ')</b> &nbsp;|&nbsp; ' +
-    'Viaturas: <b>' + GAME.frozenParams.n + '</b> &nbsp;|&nbsp; ' +
+    'Horizonte: <b>+' + hVal + ' mês (' + hTarget + ')</b> &nbsp;|&nbsp; ' +
+    'Viaturas: <b>' + unitsVal + '</b> &nbsp;|&nbsp; ' +
     'Tempo Gasto: <b>' + res.timeSpent + 's</b> ' + (res.isTimeout ? '<span style="color:#EF4444">(Tempo esgotado)</span>' : '') + ' &nbsp;|&nbsp; ' +
     'Raio de Ação: <b>1,5 km (Haversine)</b>';
 
@@ -2913,6 +2933,19 @@ document.getElementById('btn-open-briefing').addEventListener('click', () => {
   }
 });
 document.getElementById('btn-open-leaderboard').addEventListener('click', renderLeaderboardModal);
+document.getElementById('btn-open-result').addEventListener('click', () => {
+  if (GAME.lastDebriefData) {
+    showDebriefingModal(GAME.lastDebriefData);
+  } else {
+    alert('Nenhuma partida concluída ainda. Clique em "Modo Comandante" para iniciar!');
+  }
+});
+document.getElementById('btn-open-freemode').addEventListener('click', enterFreeMode);
+
+const btnReturnInt = document.getElementById('btn-return-interactive');
+if (btnReturnInt) {
+  btnReturnInt.addEventListener('click', returnToInteractivity);
+}
 
 // Modais
 document.getElementById('btn-start-match').addEventListener('click', startMatch);
@@ -2946,7 +2979,13 @@ document.getElementById('btn-timeout-view-debrief').addEventListener('click', ()
   revealPrediction(true);
 });
 
-document.getElementById('btn-close-leaderboard').addEventListener('click', closeLeaderboardModal);
+document.getElementById('btn-close-leaderboard').addEventListener('click', () => {
+  closeLeaderboardModal();
+  // Se uma partida já foi jogada, está em andamento ou expirou, entra no modo livre ao fechar o placar
+  if (GAME.state === 'REVEALED' || GAME.state === 'FREE' || GAME.state === 'MANUAL_PLACEMENT' || GAME.state === 'TIMEOUT') {
+    enterFreeMode();
+  }
+});
 document.getElementById('btn-export-leaderboard').addEventListener('click', exportLeaderboardJSON);
 document.getElementById('btn-clear-leaderboard').addEventListener('click', clearLeaderboard);
 document.getElementById('btn-leaderboard-play').addEventListener('click', () => {
